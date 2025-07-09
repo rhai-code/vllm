@@ -1,42 +1,31 @@
-# Default values for vllm.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
+---
 replicaCount: 1
 
 image:
-  registry: quay.io
-  repository: vllm/vllm
+  registry: registry.redhat.io
+  repository: rhaiis/vllm-cuda-rhel9
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
 configuration:
   env: {}
-  modelReference: ibm-granite/granite-3.3-2b-instruct  # not necessary if you're using an image
+  modelReference: ibm-granite/granite-3.3-2b-instruct  # if using a modelcar image, this will be used to set the model name, so should be changed in tandem
   extraArgs: []
   shm:
     size: 2Gi
   hfModelDownload:
     enabled: true
     huggingfaceToken: null
-  cache:
-    type: emptyDir # type can be one of pvc or emptyDir
-    size: 20Gi
-    emptyDir: {}
-    pvc:
-      accessModes:
-        - ReadWriteOnce
   modelStorage:
     type: pvc  # type can be one of pvc, image, or emptyDir
     size: 20Gi
-    mountPath: /tmp/hf_home
     emptyDir: {}
     pvc:
       accessModes:
         - ReadWriteOnce
     image:
-      type: artifact # type can be one of artifact or modelCar
+      type: modelCar # type can be modelCar
       reference: ""
       pullPolicy: IfNotPresent
 
