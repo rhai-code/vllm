@@ -54,11 +54,14 @@ spec:
           command:
             - /bin/sh
           args:
+            {{- if .Values.configuration.argsOverride }}
+              {{- toYaml .Values.configuration.argsOverride | nindent 12 }}
+            {{- else }}
             - -c
             - >-
               vllm serve
               {{- if eq .Values.configuration.modelStorage.type "image" }}
-              /opt/app-root/src/.modelcar
+              {{ .Values.configuration.modelStorage.rootDir }}/.modelcar
               --served-model-name={{ .Values.configuration.modelReference }}
               {{- else }}
               {{ .Values.configuration.modelReference }}
@@ -67,6 +70,7 @@ spec:
               {{- range .Values.configuration.extraArgs }}
               {{ quote . }}
               {{- end }}
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "vllm.fullname" . }}
@@ -98,25 +102,25 @@ spec:
               mountPath: /tmp
             - name: model-storage
         {{- if and (eq .Values.configuration.modelStorage.type "image") (eq .Values.configuration.modelStorage.image.type "modelCar") }}
-              mountPath: /opt/app-root/src/.modelcar
+              mountPath: {{ .Values.configuration.modelStorage.rootDir }}/.modelcar
         - name: modelcar
           image: {{ .Values.configuration.modelStorage.image.reference }}
           command:
             - /app/entrypoint.sh
           args:
             - mount
-            - /opt/app-root/src/.modelcar
+            - {{ .Values.configuration.modelStorage.rootDir }}/.modelcar
           {{- with .Values.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
             - name: model-storage
-              mountPath: /opt/app-root/src/.modelcar
+              mountPath: {{ .Values.configuration.modelStorage.rootDir }}/.modelcar
             - name: modelcar-mount
               mountPath: /app
         {{- else }} {{/* this is the model-storage mount for the main container when not using an image */}}
-              mountPath: /opt/app-root/src/.cache
+              mountPath: {{ .Values.configuration.modelStorage.rootDir }}/.cache
         {{- end }}
       volumes:
         - name: model-storage

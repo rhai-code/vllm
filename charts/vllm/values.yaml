@@ -18,6 +18,7 @@ configuration:
     enabled: true
     huggingfaceToken: null
   modelStorage:
+    rootDir: /opt/app-root/src
     type: pvc  # type can be one of pvc, image, or emptyDir
     size: 20Gi
     emptyDir: {}
